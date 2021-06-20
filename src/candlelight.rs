@@ -39,7 +39,7 @@ impl CandleLight {
         let identify_payload = json!({
             "op": OpCode::IDENTIFY,
             "d": {
-                "token": "ODMwMjA4MDEyNjY4NzY0MjUw.YHDVdg.zQ3HFMXhYFxiyaZPs6364Parq98",
+                "token": "NO", // For testing
                 "intents": 513,
                 "properties": {
                     "$os": "windows",
