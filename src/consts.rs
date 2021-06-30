@@ -1,7 +1,7 @@
 pub const GATEWAY: &'static str = "wss://gateway.discord.gg/?v=9&encoding=json";
 
 
-pub mod OpCode {
+pub mod op_code {
     pub const DISPATCH: u8 = 0;
     pub const HEARTBEAT: u8 = 1;
     pub const IDENTIFY: u8 = 2;

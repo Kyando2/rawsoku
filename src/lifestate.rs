@@ -2,7 +2,7 @@ use std::time::Duration;
 use serde_json::json;
 
 use crate::consts;
-use crate::consts::OpCode;
+use crate::consts::op_code;
 
 use crate::get_epoch_ms;
 
@@ -23,12 +23,12 @@ impl LifeState {
     pub fn heartbeat_payload(&self) -> String {
         if self.sequence == 0 {
             json!({
-                "op": OpCode::HEARTBEAT,
+                "op": op_code::HEARTBEAT,
                 "d": "null",
             }).to_string()
         } else {
             json!({
-                "op": OpCode::HEARTBEAT,
+                "op": op_code::HEARTBEAT,
                 "d": self.sequence,
             }).to_string()
         }
