@@ -1,5 +1,6 @@
 mod builder;
 
+use crate::events::Wax;
 use crate::lifestate::LifeState;
 use crate::{consts, consts::op_code, get_epoch_ms, GuardedRead, GuardedWrite};
 pub use builder::{BuildPayload, CandleLighter};
@@ -13,6 +14,7 @@ use url::Url;
 
 pub struct CandleLight {
     life_state: Arc<Mutex<LifeState>>,
+    wax: Wax,
 }
 
 impl CandleLight {
@@ -34,13 +36,9 @@ impl CandleLight {
                 .as_u64()
                 .expect("Could not get interval"),
         ));
-        //{
-        //  interval: Duration::from_millis(hello_json["d"]["heartbeat_interval"].as_u64().expect("Could not get interval")),
-        //sequence: 0,
-        // last_beat: get_epoch_ms(),
-        //};
-        let light = CandleLight {
+        let mut light = CandleLight {
             life_state: Arc::new(Mutex::new(life_state)),
+            wax: Wax::new(),
         };
         let read_guard = Arc::new(Mutex::new(read));
         let write_guard = Arc::new(Mutex::new(write));
@@ -58,7 +56,7 @@ impl CandleLight {
             .send(Message::text(identify_payload))
             .await;
     }
-    async fn start_dispatcher(&self, reader: GuardedRead, write: GuardedWrite) -> ! {
+    async fn start_dispatcher(&mut self, reader: GuardedRead, write: GuardedWrite) -> ! {
         let interval = self.life_state.lock().unwrap().interval();
         loop {
             match tokio::time::timeout(
@@ -68,12 +66,13 @@ impl CandleLight {
             .await
             {
                 Ok(val) => {
-                    println!(
-                        "{}",
+                    self.wax.handle(
+                        serde_json::from_str(
                         val.expect("Could not read")
                             .expect("Could not read")
                             .to_text()
                             .unwrap()
+                        ).unwrap()
                     );
                 }
                 Err(_) => {} // Do nothing not a problem, there simply wasn't a new message

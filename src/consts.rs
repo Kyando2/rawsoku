@@ -14,6 +14,10 @@ pub mod op_code {
     pub const HEARTBEAT_ACK: u8 = 11;
 }
 
+pub mod dispatch {
+    pub const GUILD_CREATE: &'static str = "GUILD_CREATE";
+}
+
 pub mod intents {
     pub const GUILDS: u16 = 1 << 0;
     pub const GUILD_MEMBERS: u16 = 1 << 1;
