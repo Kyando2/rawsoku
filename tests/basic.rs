@@ -1,7 +1,12 @@
+use rawsoku::prelude::*;
+use rawsoku::generate_intents;
 use tokio;
-use rawsoku;
 
 #[tokio::test]
 async fn basic_test() {
-    rawsoku::CandleLight::run().await;
+    CandleLighter::new()
+        .intents(generate_intents!(GUILDS, GUILD_MESSAGES))
+        .auth_token("No. :)")
+        .light()
+        .await;
 }

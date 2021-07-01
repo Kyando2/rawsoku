@@ -1,5 +1,5 @@
-use std::time::Duration;
 use serde_json::json;
+use std::time::Duration;
 
 use crate::consts;
 use crate::consts::op_code;
@@ -17,7 +17,7 @@ impl LifeState {
         LifeState {
             interval,
             sequence: 0,
-            last_beat: get_epoch_ms()
+            last_beat: get_epoch_ms(),
         }
     }
     pub fn heartbeat_payload(&self) -> String {
@@ -25,12 +25,14 @@ impl LifeState {
             json!({
                 "op": op_code::HEARTBEAT,
                 "d": "null",
-            }).to_string()
+            })
+            .to_string()
         } else {
             json!({
                 "op": op_code::HEARTBEAT,
                 "d": self.sequence,
-            }).to_string()
+            })
+            .to_string()
         }
     }
     pub fn update_sequence(&mut self, seq: u32) {

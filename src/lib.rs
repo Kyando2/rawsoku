@@ -1,29 +1,61 @@
 #![warn(clippy::pedantic)]
 
-mod lifestate;
-mod consts;
 mod candlelight;
+mod consts;
+mod lifestate;
+pub mod prelude;
 
-use std::{time::{Duration, SystemTime, UNIX_EPOCH}, sync::{Mutex, Arc, mpsc::channel}, thread, io::stdin};
+use std::{
+    io::stdin,
+    sync::{mpsc::channel, Arc, Mutex},
+    thread,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
+use futures_util::stream::{SplitSink, SplitStream};
+use futures_util::{future, pin_mut, SinkExt, StreamExt};
 use serde_json::json;
-use futures_util::{future, pin_mut, StreamExt, SinkExt};
-use tokio_tungstenite::{connect_async, tungstenite::protocol::Message, tungstenite::client::AutoStream, WebSocketStream};
-use url::Url;
-use futures_util::stream::{SplitStream, SplitSink};
 use tokio;
-use tokio::{task, net::TcpStream, io::{AsyncReadExt, AsyncWriteExt}};
+use tokio::{
+    io::{AsyncReadExt, AsyncWriteExt},
+    net::TcpStream,
+    task,
+};
 use tokio_native_tls;
+use tokio_tungstenite::{
+    connect_async, tungstenite::client::AutoStream, tungstenite::protocol::Message, WebSocketStream,
+};
+use url::Url;
 
 // Internals
+use candlelight::CandleLight;
 use lifestate::LifeState;
 
-// Exports
-pub use candlelight::CandleLight;
-
-pub type GuardedRead = Arc<Mutex<SplitStream<WebSocketStream<tokio_tungstenite::stream::Stream<tokio::net::TcpStream, tokio_native_tls::TlsStream<tokio::net::TcpStream>>>>>>;
-pub type GuardedWrite = Arc<Mutex<SplitSink<WebSocketStream<tokio_tungstenite::stream::Stream<tokio::net::TcpStream, tokio_native_tls::TlsStream<tokio::net::TcpStream>>>, Message>>>;
-
+pub type GuardedRead = Arc<
+    Mutex<
+        SplitStream<
+            WebSocketStream<
+                tokio_tungstenite::stream::Stream<
+                    tokio::net::TcpStream,
+                    tokio_native_tls::TlsStream<tokio::net::TcpStream>,
+                >,
+            >,
+        >,
+    >,
+>;
+pub type GuardedWrite = Arc<
+    Mutex<
+        SplitSink<
+            WebSocketStream<
+                tokio_tungstenite::stream::Stream<
+                    tokio::net::TcpStream,
+                    tokio_native_tls::TlsStream<tokio::net::TcpStream>,
+                >,
+            >,
+            Message,
+        >,
+    >,
+>;
 
 fn get_epoch_ms() -> u128 {
     SystemTime::now()
@@ -31,5 +63,3 @@ fn get_epoch_ms() -> u128 {
         .unwrap()
         .as_millis()
 }
-
-
