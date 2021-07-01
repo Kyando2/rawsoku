@@ -2,8 +2,8 @@ use std::env::consts::OS;
 
 use serde_json::json;
 
-use crate::consts::op_code;
 use super::CandleLight;
+use crate::consts::op_code;
 
 #[macro_export]
 macro_rules! generate_intents {
@@ -56,6 +56,7 @@ impl BuildPayload {
                     "$device": "Rawsoku",
                 }
             }
-        }).to_string()
+        })
+        .to_string()
     }
 }

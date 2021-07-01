@@ -1,2 +1,2 @@
-pub use crate::consts::{op_code::*, intents::*};
-pub use crate::candlelight::{CandleLighter};
+pub use crate::candlelight::CandleLighter;
+pub use crate::consts::{intents::*, op_code::*};

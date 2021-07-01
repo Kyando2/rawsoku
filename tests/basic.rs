@@ -1,5 +1,5 @@
-use rawsoku::prelude::*;
 use rawsoku::generate_intents;
+use rawsoku::prelude::*;
 use tokio;
 
 #[tokio::test]
