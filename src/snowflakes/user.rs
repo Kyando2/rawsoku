@@ -1,11 +1,33 @@
+use std::str;
+
 use serde_json::Value;
 
-#[derive(Clone)]
-pub struct User;
+use crate::events::Cache;
+
+#[derive(Clone, Eq)]
+pub struct User {
+    id: String,
+    auth: String,
+}
 
 impl User {
-    pub fn gen_create_guild(data: &Value) -> User {
-        println!("User data: {}", data.to_string());
-        User {}
+    pub fn new_from_object(data: &Value, cache: &mut Cache, auth: String) -> User {
+        dbg!(&data);
+        let id = data["id"].as_str().unwrap().to_string();
+        let user = User {
+            id,
+            auth,
+        };
+        cache.new_user(user.clone());
+        user
+    }
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+}
+
+impl PartialEq for User {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id 
     }
 }

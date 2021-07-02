@@ -1,11 +1,12 @@
+#![allow(dead_code, unused_must_use)]
+
 mod builder;
 
 use crate::events::Wax;
 use crate::lifestate::LifeState;
-use crate::{consts, consts::op_code, get_epoch_ms, GuardedRead, GuardedWrite};
+use crate::{consts, get_epoch_ms, GuardedRead, GuardedWrite};
 pub use builder::{BuildPayload, CandleLighter};
 use futures_util::{SinkExt, StreamExt};
-use serde_json::json;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio_tungstenite::connect_async;
@@ -19,7 +20,7 @@ pub struct CandleLight {
 
 impl CandleLight {
     pub async fn run(payload: BuildPayload) -> ! {
-        let (client, response) = connect_async(Url::parse(consts::GATEWAY).unwrap())
+        let (client, _) = connect_async(Url::parse(consts::GATEWAY).unwrap())
             .await
             .expect("Can't connect");
 
@@ -70,11 +71,12 @@ impl CandleLight {
                 Ok(val) => {
                     self.wax.handle(
                         serde_json::from_str(
-                        val.expect("Could not read")
-                            .expect("Could not read")
-                            .to_text()
-                            .unwrap()
-                        ).unwrap()
+                            val.expect("Could not read")
+                                .expect("Could not read")
+                                .to_text()
+                                .unwrap(),
+                        )
+                        .unwrap(),
                     );
                 }
                 Err(_) => {} // Do nothing not a problem, there simply wasn't a new message

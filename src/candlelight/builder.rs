@@ -3,9 +3,7 @@ use std::env::consts::OS;
 use serde_json::json;
 
 use super::CandleLight;
-use crate::consts::op_code;
-use reqwest::blocking::Client;
-use crate::snowflakes::Channel;
+use crate::consts::{op_code, OnMessageHandler};
 
 #[macro_export]
 macro_rules! generate_intents {
@@ -36,7 +34,7 @@ impl CandleLighter {
         self.payload.auth_token = Some(token);
         self
     }
-    pub fn on_message(mut self, handle: fn(Client, Channel)) -> CandleLighter {
+    pub fn on_message(mut self, handle: OnMessageHandler) -> CandleLighter {
         self.payload.on_message_handle = Some(handle);
         self
     }
@@ -48,24 +46,27 @@ impl CandleLighter {
 pub struct BuildPayload {
     auth_token: Option<&'static str>,
     intents: Option<u16>,
-    on_message_handle: Option<fn(Client, Channel)>,
+    on_message_handle: Option<OnMessageHandler>,
 }
 
 impl BuildPayload {
-    pub fn get_inner(self) -> (String, Option<fn(Client, Channel)>) {
-        (json!({
-            "op": op_code::IDENTIFY,
-            "d": {
-                "token": self.auth_token.expect("Did not specify auth token"),
-                "intents": self.intents.expect("Did not specify intents"),
-                "properties": {
-                    "$os": OS,
-                    "$browser": "Rawsoku",
-                    "$device": "Rawsoku",
+    pub fn get_inner(self) -> (String, Option<OnMessageHandler>) {
+        (
+            json!({
+                "op": op_code::IDENTIFY,
+                "d": {
+                    "token": self.auth_token.expect("Did not specify auth token"),
+                    "intents": self.intents.expect("Did not specify intents"),
+                    "properties": {
+                        "$os": OS,
+                        "$browser": "Rawsoku",
+                        "$device": "Rawsoku",
+                    }
                 }
-            }
-        })
-        .to_string(), self.on_message_handle)
+            })
+            .to_string(),
+            self.on_message_handle,
+        )
     }
     pub fn get_auth_token(&self) -> String {
         self.auth_token.unwrap().to_string()

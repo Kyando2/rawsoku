@@ -1,50 +1,51 @@
-use serde_json::Value;
 use serde_json::json;
+use serde_json::Value;
 
-use crate::events::Cache;
-use reqwest::blocking::Client;
 use crate::consts::BASE_URL;
+use crate::events::Cache;
+use crate::prelude::Handle;
 
 #[derive(Clone)]
 pub struct Channel {
     id: String,
+    auth: String,
     name: Option<String>,
-    auth: Option<String>,
 }
 
 impl Channel {
-    pub fn gen_create_guild(data: &Value, cache: &mut Cache) -> Channel {
+    pub fn new_from_object(data: &Value, cache: &mut Cache, auth: String) -> Channel {
         let name = data["name"].as_str().unwrap().to_owned();
         let id = data["id"].as_str().unwrap().to_owned();
         let channel = Channel {
             id,
             name: Some(name),
-            auth: None
+            auth,
         };
         cache.new_channel(channel.clone());
         channel
     }
-    pub fn gen_create_message(data: &Value, cache: &mut Cache, auth: String) -> Channel {
-        let id = data["channel_id"].as_str().unwrap().to_owned();
+    pub fn new_from_id(id: String, cache: &mut Cache, auth: String) -> Channel {
         let channel = Channel {
             id,
             name: None,
-            auth: Some(auth)
+            auth,
         };
         cache.new_channel(channel.clone());
         channel
     }
-    pub fn send_message(&self, client: Client, content: String) {
+    pub fn send_message(&self, handle: Handle, content: String) {
         let url = format!("{}/channels/{}/messages", BASE_URL, self.id);
-        let dat = client.post(url)
-            .header("Authorization", format!("Bot {}", self.auth.as_ref().unwrap().clone()))
-            .header("Content-Type", "application/json")
-            .body(json!({
-                "content": content,
-                "tts": false,
-            }).to_string())
-            .send().expect("guess not");
-        println!("{}", dat.text().unwrap());
+        handle
+            .post(
+                self.auth.clone(),
+                url,
+                json!({
+                    "content": content,
+                    "tts": false,
+                })
+                .to_string(),
+            )
+            .expect("Error sending request");
     }
     pub fn id(&self) -> &str {
         &self.id

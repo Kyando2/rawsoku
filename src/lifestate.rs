@@ -1,7 +1,8 @@
+#![allow(dead_code)]
+
 use serde_json::json;
 use std::time::Duration;
 
-use crate::consts;
 use crate::consts::op_code;
 
 use crate::get_epoch_ms;

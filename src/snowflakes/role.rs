@@ -4,7 +4,7 @@ use serde_json::Value;
 pub struct Role;
 
 impl Role {
-    pub fn gen_create_guild(data: &Value) -> Role {
+    pub fn new_from_object(data: &Value) -> Role {
         println!("Role data: {}", data.to_string());
         Role {}
     }

@@ -2,36 +2,21 @@
 
 mod candlelight;
 mod consts;
-mod lifestate;
 mod events;
-pub mod snowflakes;
+mod http;
+mod lifestate;
 pub mod prelude;
+pub mod snowflakes;
 
 use std::{
-    io::stdin,
-    sync::{mpsc::channel, Arc, Mutex},
-    thread,
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    sync::{Arc, Mutex},
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 use futures_util::stream::{SplitSink, SplitStream};
-use futures_util::{future, pin_mut, SinkExt, StreamExt};
-use serde_json::json;
 use tokio;
-use tokio::{
-    io::{AsyncReadExt, AsyncWriteExt},
-    net::TcpStream,
-    task,
-};
 use tokio_native_tls;
-use tokio_tungstenite::{
-    connect_async, tungstenite::client::AutoStream, tungstenite::protocol::Message, WebSocketStream,
-};
-use url::Url;
-
-// Internals
-use candlelight::CandleLight;
-use lifestate::LifeState;
+use tokio_tungstenite::{tungstenite::protocol::Message, WebSocketStream};
 
 pub type GuardedRead = Arc<
     Mutex<
