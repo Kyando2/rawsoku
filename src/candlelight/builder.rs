@@ -4,6 +4,8 @@ use serde_json::json;
 
 use super::CandleLight;
 use crate::consts::op_code;
+use reqwest::blocking::Client;
+use crate::snowflakes::Channel;
 
 #[macro_export]
 macro_rules! generate_intents {
@@ -22,6 +24,7 @@ impl CandleLighter {
             payload: BuildPayload {
                 auth_token: None,
                 intents: None,
+                on_message_handle: None,
             },
         }
     }
@@ -33,6 +36,10 @@ impl CandleLighter {
         self.payload.auth_token = Some(token);
         self
     }
+    pub fn on_message(mut self, handle: fn(Client, Channel)) -> CandleLighter {
+        self.payload.on_message_handle = Some(handle);
+        self
+    }
     pub async fn light(self) -> ! {
         CandleLight::run(self.payload).await
     }
@@ -41,11 +48,12 @@ impl CandleLighter {
 pub struct BuildPayload {
     auth_token: Option<&'static str>,
     intents: Option<u16>,
+    on_message_handle: Option<fn(Client, Channel)>,
 }
 
 impl BuildPayload {
-    pub fn get_identify_data(self) -> String {
-        json!({
+    pub fn get_inner(self) -> (String, Option<fn(Client, Channel)>) {
+        (json!({
             "op": op_code::IDENTIFY,
             "d": {
                 "token": self.auth_token.expect("Did not specify auth token"),
@@ -57,6 +65,9 @@ impl BuildPayload {
                 }
             }
         })
-        .to_string()
+        .to_string(), self.on_message_handle)
+    }
+    pub fn get_auth_token(&self) -> String {
+        self.auth_token.unwrap().to_string()
     }
 }

@@ -36,9 +36,10 @@ impl CandleLight {
                 .as_u64()
                 .expect("Could not get interval"),
         ));
+        let wax = Wax::new(payload.get_auth_token());
         let mut light = CandleLight {
             life_state: Arc::new(Mutex::new(life_state)),
-            wax: Wax::new(),
+            wax,
         };
         let read_guard = Arc::new(Mutex::new(read));
         let write_guard = Arc::new(Mutex::new(write));
@@ -47,9 +48,10 @@ impl CandleLight {
             .start_dispatcher(read_guard.clone(), write_guard.clone())
             .await
     }
-    async fn identify(&self, write: GuardedWrite, payload: BuildPayload) {
+    async fn identify(&mut self, write: GuardedWrite, payload: BuildPayload) {
         // throw away identify
-        let identify_payload = payload.get_identify_data();
+        let (identify_payload, omh) = payload.get_inner();
+        self.wax.set_on_message(omh);
         write
             .lock()
             .unwrap()

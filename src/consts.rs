@@ -1,4 +1,5 @@
 pub const GATEWAY: &'static str = "wss://gateway.discord.gg/?v=9&encoding=json";
+pub const BASE_URL: &'static str = "https://discord.com/api";
 
 pub mod op_code {
     pub const DISPATCH: u8 = 0;
@@ -16,6 +17,7 @@ pub mod op_code {
 
 pub mod dispatch {
     pub const GUILD_CREATE: &'static str = "GUILD_CREATE";
+    pub const MESSAGE_CREATE: &'static str = "MESSAGE_CREATE";
 }
 
 pub mod intents {
