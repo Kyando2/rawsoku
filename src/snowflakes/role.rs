@@ -1,11 +1,14 @@
-use serde_json::Value;
+use serde::Deserialize;
 
-#[derive(Clone)]
-pub struct Role;
-
-impl Role {
-    pub fn new_from_object(data: &Value) -> Role {
-        println!("Role data: {}", data.to_string());
-        Role {}
-    }
+#[derive(Clone, Deserialize)]
+pub struct Role {
+    id: String,
+    name: String,
+    color: u32,
+    hoist: bool,
+    permissions: String,
+    managed: bool,
+    mentionable: bool,
 }
+
+impl Role {}

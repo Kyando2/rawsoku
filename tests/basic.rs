@@ -14,6 +14,6 @@ async fn basic_test() {
 
 fn omh(h: Handle, c: Message) {
     if h.me() != c.author() {
-        c.channel().send_message(h, c.content().to_string());
+        c.reply(h, c.content().to_string());
     }
 }

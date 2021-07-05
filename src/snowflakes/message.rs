@@ -1,49 +1,51 @@
 use std::str;
 
-use serde_json::Value;
+use serde::Deserialize;
+use serde_json::json;
 
-use crate::events::Cache;
+use crate::{consts::BASE_URL, prelude::Handle};
 
 use super::{Channel, User};
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize)]
 pub struct Message {
     id: String,
-    auth: String,
-    channel: Channel,
+    channel_id: String,
+    guild_id: String,
     author: User,
     content: String,
 }
 
 impl Message {
-    pub fn new_from_object(data: &Value, cache: &mut Cache, auth: String) -> Message {
-        let channel = Channel::new_from_id(
-            data["channel_id"].as_str().unwrap().to_owned(),
-            cache,
-            auth.clone(),
-        );
-        let author = User::new_from_object(&data["author"], cache, auth.clone());
-        let id = data["id"].as_str().unwrap().to_owned();
-        let msg = Message {
-            id,
-            auth,
-            channel,
-            author,
-            content: data["content"].as_str().unwrap().to_owned(),
-        };
-        cache.new_message(msg.clone());
-        msg
-    }
     pub fn id(&self) -> &str {
-        &self.id
+        self.id.as_ref()
     }
-    pub fn channel(&self) -> &Channel {
-        &self.channel
+    pub fn channel(&self) -> Channel {
+        Channel::new_from_id(self.channel_id.clone())
     }
     pub fn content(&self) -> &str {
         &self.content
     }
     pub fn author(&self) -> &User {
         &self.author
+    }
+    pub fn reply(&self, handle: Handle, content: String) {
+        let url = format!("{}/channels/{}/messages", BASE_URL, self.channel_id.to_string());
+        let _ = handle
+            .post(
+                url,
+                json!({
+                    "content": content,
+                    "tts": false,
+                    "message_reference": {
+                        "message_id": self.id,
+                        "channel_id": self.channel_id,
+                        "guild_id": self.guild_id,
+                        "fail_if_not_exists": false,
+                    } 
+                })
+                .to_string(),
+            )
+            .expect("Error sending request");
     }
 }

@@ -1,43 +1,48 @@
+use serde::Deserialize;
 use serde_json::json;
-use serde_json::Value;
 
 use crate::consts::BASE_URL;
-use crate::events::Cache;
 use crate::prelude::Handle;
 
-#[derive(Clone)]
+use super::User;
+
+#[derive(Clone, Deserialize)]
 pub struct Channel {
     id: String,
-    auth: String,
-    name: Option<String>,
+    name: String,
+    r#type: Option<u32>,
+    guild_id: Option<String>,
+    position: Option<u32>,
+    icon: Option<String>,
+    recipients: Option<Vec<User>>,
+    nsfw: Option<bool>,
+    bitrate: Option<u32>,
+    user_limit: Option<u32>,
+    rate_limit_per_user: Option<u32>,
+    topic: Option<String>,
 }
 
 impl Channel {
-    pub fn new_from_object(data: &Value, cache: &mut Cache, auth: String) -> Channel {
-        let name = data["name"].as_str().unwrap().to_owned();
-        let id = data["id"].as_str().unwrap().to_owned();
-        let channel = Channel {
-            id,
-            name: Some(name),
-            auth,
-        };
-        cache.new_channel(channel.clone());
-        channel
-    }
-    pub fn new_from_id(id: String, cache: &mut Cache, auth: String) -> Channel {
-        let channel = Channel {
-            id,
-            name: None,
-            auth,
-        };
-        cache.new_channel(channel.clone());
-        channel
+    pub fn new_from_id(id: String) -> Channel {
+        Channel {
+            id: id.into(),
+            name: "Null".to_string(),
+            r#type: None,
+            guild_id: None,
+            position: None,
+            topic: None,
+            recipients: None,
+            nsfw: None,
+            bitrate: None,
+            user_limit: None,
+            icon: None,
+            rate_limit_per_user: None,
+        }
     }
     pub fn send_message(&self, handle: Handle, content: String) {
-        let url = format!("{}/channels/{}/messages", BASE_URL, self.id);
-        handle
+        let url = format!("{}/channels/{}/messages", BASE_URL, self.id.to_string());
+        let _ = handle
             .post(
-                self.auth.clone(),
                 url,
                 json!({
                     "content": content,
@@ -47,7 +52,7 @@ impl Channel {
             )
             .expect("Error sending request");
     }
-    pub fn id(&self) -> &str {
-        &self.id
+    pub fn id(&self) -> String {
+        self.id.to_string()
     }
 }

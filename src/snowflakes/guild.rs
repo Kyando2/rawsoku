@@ -1,74 +1,29 @@
-use serde_json::Value;
-
-use super::{Channel, Role, User};
-
+use serde::Deserialize;
+use super::{Channel, Member, Role};
 use crate::events::Cache;
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize)]
 pub struct Guild {
-    name: String,
+    name: Option<String>,
     id: String,
-    auth: String,
     channels: Option<Vec<Channel>>,
-    members: Option<Vec<User>>,
+    members: Option<Vec<Member>>,
     roles: Option<Vec<Role>>,
 }
 
 impl Guild {
-    pub fn new_from_object(data: &Value, cache: &mut Cache, auth: String) -> Guild {
-        let name = data["name"]
-            .as_str()
-            .expect("The guild's name wasn't a string")
-            .to_owned();
-        let id = data["id"].as_str().unwrap().to_owned();
-        let maybe_channels = data.get("channels");
-        let channels = match maybe_channels {
-            Some(channels_data) => Some(
-                channels_data
-                    .as_array()
-                    .unwrap()
-                    .into_iter()
-                    .map(|x| Channel::new_from_object(x, cache, auth.clone()))
-                    .collect(),
-            ),
-            None => None,
-        };
-        let maybe_members = data.get("members");
-        let members = match maybe_members {
-            Some(members_data) => Some(
-                members_data
-                    .as_array()
-                    .unwrap()
-                    .into_iter()
-                    .map(|x| User::new_from_object(&x["user"], cache, auth.clone()))
-                    .collect(),
-            ),
-            None => None,
-        };
-        let maybe_roles = data.get("roles");
-        let roles = match maybe_roles {
-            Some(roles_data) => Some(
-                roles_data
-                    .as_array()
-                    .unwrap()
-                    .into_iter()
-                    .map(|x| Role::new_from_object(x))
-                    .collect(),
-            ),
-            None => None,
-        };
+    pub fn new_from_id(id: String, cache: &mut Cache) -> Guild {
         let guild = Guild {
-            name,
-            id,
-            channels,
-            members,
-            roles,
-            auth,
+            id: id.as_str().into(),
+            name: None,
+            channels: None,
+            members: None,
+            roles: None,
         };
         cache.new_guild(guild.clone());
         guild
     }
     pub fn id(&self) -> &str {
-        &self.id
+        self.id.as_ref()
     }
 }

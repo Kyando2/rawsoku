@@ -77,6 +77,7 @@ impl CandleLight {
                                 .unwrap(),
                         )
                         .unwrap(),
+                        self.life_state.clone()
                     );
                 }
                 Err(_) => {} // Do nothing not a problem, there simply wasn't a new message
