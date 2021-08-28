@@ -60,13 +60,20 @@ impl CandleLight {
             .await;
     }
     async fn start_dispatcher(&mut self, reader: GuardedRead, write: GuardedWrite) -> ! {
+        // Finds the interval at which heartbeats need to be sent.
         let interval = self.life_state.lock().unwrap().interval();
+        // Starts the dispatcher loop
+        // the loop starts by checking if a new message was received from the gateway 
+        // for 5 seconds. If nothing was received it simply continues. If something was
+        // received it sends it to the `Wax` so that the event can be handled.
         loop {
+            // Try to read a message from the gateway for 5 seconds.
             match tokio::time::timeout(
                 Duration::from_millis(5000u64),
                 reader.lock().unwrap().next(),
             )
             .await
+            // Handles the message through the wax if something was received.
             {
                 Ok(val) => {
                     self.wax.handle(
@@ -82,8 +89,12 @@ impl CandleLight {
                 }
                 Err(_) => {} // Do nothing not a problem, there simply wasn't a new message
             }
+            // Checks if it's time to send a heartbeat to the gateway.
             if self.life_state.lock().unwrap().last_beat() + interval.as_millis() <= get_epoch_ms()
             {
+                // Sends a heartbeat with the payload obtained from the lifestate 
+                // and updates the payload meta. If the heartbeat ack wasn't received
+                // panics.
                 write
                     .lock()
                     .unwrap()

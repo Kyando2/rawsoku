@@ -64,9 +64,7 @@ impl Wax {
         let user: User = serde_json::from_value(data["d"]["user"].clone()).unwrap();
         self.me = Some(user);
     }
-    fn gen_commands(&mut self) {
-        let handle = Handle::new(self.me.as_ref().unwrap().clone(), self.auth_token.clone());
-    }
+    fn gen_commands(&mut self) {}
     fn handle_message(&mut self, data: Value) {
         let msg: Message = serde_json::from_value(data["d"].clone()).unwrap();
         if self.handlers.on_message.is_some() {
